@@ -1,0 +1,18 @@
+spring:
+    application:
+     name: person-service 
+    profiles:
+      active: prod-person
+    cloud:
+        config: 
+            uri: http://configserverperson:8073
+
+#Enable all Spring Boot Actuator endpoints.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"    
+
+server:
+  port: 8082

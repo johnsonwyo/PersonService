@@ -1,0 +1,50 @@
+version: '2.1'
+name: person-service
+services:
+  databaseperson:
+    image: postgres:latest
+    ports:
+      - "5434:5434"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB:       "saop_prod_person"
+      POSTGRES_HOST_AUTH_METHOD: trust 
+      PGPORT: 5434
+    networks:
+      backend:
+        aliases:
+          - "database person"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  configserverperson:
+    image: saop/configserverperson:0.0.1-SNAPSHOT
+    ports:
+       - "8073:8073"
+    networks:
+      backend:
+        aliases:
+          - "configserverperson"
+  personservice:
+    image: saop/personservice:0.0.2-SNAPSHOT
+    environment:
+      PROFILE: "prod-person"
+      CONFIGSERVER_URI: "http://configserverperson:8073"
+      CONFIGSERVER_PORT:   "8073"
+      DATABASESERVER_PORT: "5434"
+    depends_on:
+      databaseperson:
+        condition: service_healthy
+      configserverperson:
+        condition: service_started
+    ports:
+      - "8082:8082"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
